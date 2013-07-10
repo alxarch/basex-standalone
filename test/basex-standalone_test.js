@@ -22,8 +22,8 @@ var basex = require('../lib/basex-standalone.js');
     test.ifError(value)
 */
 
-basex.env.basexjar = 'tmp/basex.jar';
-basex.env.basexpath = 'tmp/basex';
+basex.env.jar = 'tmp/basex.jar';
+basex.env.path = 'tmp/basex';
 
 var one_to_ten = {
   xquery: '1 to 10'
@@ -91,13 +91,13 @@ exports['basex'] = {
       test.equal(data, 'ok', 'should run XQuery files.')
       test.done()
     })
-    .fail(function(error){
+    .fail(function(){
       test.done(false)
     })
 
     
   },
-  
+
   'newline': function(test){
     test.expect(1);
     basex({
@@ -107,7 +107,7 @@ exports['basex'] = {
       test.ok(data = one_to_ten.expect.replace(' ', "\n"), 'Should split results by newlines.')
       test.done()
     })
-    .fail(function(error){
+    .fail(function(){
       test.done(false)
     })
 
@@ -121,7 +121,7 @@ exports['basex'] = {
       test.ok(data.match(/General Information/g).length === 3, 'Should run Command Scripts.')
       test.done()
     })
-    .fail(function(error){
+    .fail(function(){
       test.done(false)
     })
 
