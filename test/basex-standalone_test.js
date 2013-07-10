@@ -1,6 +1,6 @@
 'use strict';
 
-var basex_standalone = require('../lib/basex-standalone.js');
+var basex = require('../lib/basex-standalone.js');
 
 /*
   ======== A Handy Little Nodeunit Reference ========
@@ -22,8 +22,8 @@ var basex_standalone = require('../lib/basex-standalone.js');
     test.ifError(value)
 */
 
-basex_standalone.env.basexjar = 'tmp/basex.jar';
-basex_standalone.env.basexpath = 'tmp/basex';
+basex.env.basexjar = 'tmp/basex.jar';
+basex.env.basexpath = 'tmp/basex';
 
 var one_to_ten = {
   xquery: '1 to 10'
@@ -33,61 +33,53 @@ var one_to_ten = {
 exports['basex'] = {
   setUp: function(done) {
     // setup here
-    done();
+    done()
   },
   'simple query': function(test) {
     test.expect(1);
     // tests here
-    var basex = new basex_standalone()
-    basex.exec(one_to_ten, function(error, stdout){
-      if(error) throw error
-
-      test.equal(stdout, one_to_ten.expect, 'should run simple queries.')
+    var b = new basex()
+    b.exec(one_to_ten).then(function(actual){
+      test.equal(actual, one_to_ten.expect, 'should run simple queries.')
       test.done()
     })
   },
   'debug': function(test) {
     test.expect(1);
     // tests here
-    basex_standalone({ xquery: '1 to 10wrr-', debug: true}, function(error){
-      if(error){
-        test.ok(error.toString().match(/org\.basex\.query\.QueryException/), 'Debug info in error message.')
-      }
-      test.done();
-    })
+    basex({ xquery: '1 to 10wrr-', debug: true})
+      .fail(function(error){
+        var contains = 'org.basex.query.QueryException'
+        test.ok(error.message.indexOf(contains) > -1, 'Debug info in error message.')
+        test.done()
+      })
   },
   'simple command': function(test) {
-    test.expect(1);
+    test.expect(1)
     // tests here
-    var basex = new basex_standalone()
-    basex.exec({ commands: ['INFO']}, function(error, stdout){
-      if(error) throw error
-      test.ok(stdout.match(/General Information/), 'should run simple queries.');
-      test.done();
-    })
+   
+    basex({ commands: ['INFO']})
+      .then(function(data){
+        test.ok(data.match(/General Information/), 'should run simple queries.')
+        test.done()
+      })
   },
   'callable': function(test) {
     test.expect(1);
     // tests here
     
-    basex_standalone(one_to_ten, function(error, stdout){
-      // if(error) test.done(error)
-
-      test.equal(stdout, one_to_ten.expect, 'should be callable directly.');
-      test.done();
-
-    })
+    basex(one_to_ten)
+      .then(function(data){
+        test.equal(data, one_to_ten.expect, 'should be callable directly.')
+        test.done()
+      })
   },
   'no args': function(test) {
     test.expect(1);
     // tests here
-    var basex = new basex_standalone()
-    basex.exec({}, function(error, stdout){
-      if(error) throw error
-
-      test.equal(stdout, '', 'should run empty without outout.');
-      test.done();
-
+    basex().then(function(data){
+      test.equal(data, '', 'should run empty without outout.')
+      test.done()
     })
   },
 };
