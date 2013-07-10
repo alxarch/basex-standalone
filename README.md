@@ -81,7 +81,9 @@ If the file suffix is `.bxs`, the file content
 will be evaluated as Command Script; otherwise, 
 the file contents will be evaluated as an XQuery expression.
 
-This value is *expanded* to `RUN` multiple files.
+> Note: The `run` option *only* accepts files as arguments
+> Use the `xquery` and `commands` options in order to 
+> directly evaluate XQuery code and BaseX commands.
 
 #### commands
 
