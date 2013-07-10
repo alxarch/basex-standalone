@@ -1,0 +1,42 @@
+{
+  "name": "basex-standalone",
+  "description": "Process data using XQuery with BaseX in standalone mode.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/alxarch/basex-standalone",
+  "author": {
+    "name": "Alexandros Sigalas",
+    "email": "alxarch@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/alxarch/basex-standalone.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alxarch/basex-standalone/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/alxarch/basex-standalone/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/basex-standalone",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-watch": "~0.4.0",
+    "grunt": "~0.4.1",
+    "grunt-curl": "~1.1.1",
+    "grunt-contrib-clean": "~0.4.1"
+  },
+  "keywords": ["basex", "xquery"],
+  "dependencies": {
+    "lodash": "~1.3.1"
+  }
+}
