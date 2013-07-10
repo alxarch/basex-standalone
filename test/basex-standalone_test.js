@@ -44,6 +44,14 @@ exports['basex'] = {
       test.done()
     })
   },
+  'escape xquery': function(test){
+      test.expect(1);
+      basex({ xquery: 'for $n in 1 to 10 return $n'})
+        .done(function(data){
+            test.equal(data, one_to_ten.expect, "Escapes $ sign properly.")
+            test.done()
+        })
+  },
   'debug': function(test) {
     test.expect(1);
     // tests here
