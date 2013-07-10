@@ -1,0 +1,1 @@
+doc('test/fixtures/book.html')//abbr/@title/string()

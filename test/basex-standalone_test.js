@@ -1,7 +1,7 @@
 'use strict';
 
 var basex = require('../lib/basex-standalone.js');
-
+// var fs = require('fs');
 /*
   ======== A Handy Little Nodeunit Reference ========
   https://github.com/caolan/nodeunit
@@ -82,11 +82,56 @@ exports['basex'] = {
         test.done()
       })
   },
+  'run xquery': function(test){
+    test.expect(1);
+    basex({
+      run: 'test/fixtures/query.xql'
+    }).then(function(data){
+      console.log(data)
+      test.equal(data, 'ok', 'should run XQuery files.')
+      test.done()
+    })
+    .fail(function(error){
+      test.done(false)
+    })
+
+    
+  },
+  
+  'newline': function(test){
+    test.expect(1);
+    basex({
+      xquery: '1 to 10',
+      newline: true
+    }).then(function(data){
+      test.ok(data = one_to_ten.expect.replace(' ', "\n"), 'Should split results by newlines.')
+      test.done()
+    })
+    .fail(function(error){
+      test.done(false)
+    })
+
+    
+  },
+  'run bxs': function(test){
+    test.expect(1);
+    basex({
+      run: 'test/fixtures/info.bxs'
+    }).then(function(data){
+      test.ok(data.match(/General Information/g).length === 3, 'Should run Command Scripts.')
+      test.done()
+    })
+    .fail(function(error){
+      test.done(false)
+    })
+
+    
+  },
   'no args': function(test) {
     test.expect(1);
     // tests here
     basex().then(function(data){
-      test.equal(data, '', 'should run empty without outout.')
+      test.equal(data, '', 'should run empty without output.')
       test.done()
     })
   },
