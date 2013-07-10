@@ -94,10 +94,22 @@ exports['basex'] = {
     .fail(function(){
       test.done(false)
     })
+    
+  },
+  'no run xquery inline': function(test){
+    test.expect(1);
+    basex({
+      run: '"1 to 10"'
+    }).then(function(data){
+      test.equal(data, '', 'should run XQuery inline.')
+      test.done()
+    })
+    .fail(function(){
+      test.done(false)
+    })
 
     
   },
-
   'newline': function(test){
     test.expect(1);
     basex({

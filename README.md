@@ -1,8 +1,11 @@
 # basex-standalone [![Build Status](https://secure.travis-ci.org/alxarch/basex-standalone.png?branch=master)](http://travis-ci.org/alxarch/basex-standalone)
 
-Process data using XQuery with BaseX in standalone mode.
+Process data using `XQuery` with `BaseX` in standalone mode.
+
 
 ## Getting Started
+
+
 Install the module with: `npm install basex-standalone`
 
 ```javascript
@@ -32,17 +35,44 @@ b.exec({
 
 ```
 
-The *promise* interface is used, as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
-
 ## Documentation
+
+
+`BaseX` includes a fast, feature-rich XQuery processor
+that can juggle json, xml, csv and other data easily
+and provides powerfull document manipulation facilities 
+by implementing the XQuery Update specification.
+
+For more information about `BaseX`, 
+what you can do with it, 
+and how to do it,
+read through the *excellent* documentation on [docs.basex.org](http://docs.basex.org)
+
+This module acts as a simple wrapper around `BaseX`'s
+*Standalone Mode* passing arguments via cli and reading back
+stdout/stderr output.
+
+Asyncronous execution is handled with
+the *promise* interface, 
+as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
+
+
+> Tip: For better performance, prefer command scripts 
+> over sequential invocations (ie multiple `ADD`, `SET` commands)
+
 
 ### Options
 
 For better understanding of these options see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
 
+
+
 #### run
+
 Type: `String`
+
 Default value: `''`
+
 
 Similar to `RUN` command. [docs](http://docs.basex.org/wiki/Commands#RUN)
 
@@ -54,8 +84,12 @@ the file contents will be evaluated as an XQuery expression.
 This value is *expanded* to `RUN` multiple files.
 
 #### commands
+
 Type: `String|Array`
+
 Default value: `[]`
+
+Argument(s): `-c<COMMAND>`
 
 Execute commands before *each* src / dest pair execution.
 
@@ -63,15 +97,23 @@ In order to execute set of commands *once* before
 a target use a separate target and a MultiTask
 
 #### bind
+
 Type: `Object`
+
 Default value: `{}`
+
+Argument(s): `-b<name>=<val>`
 
 Binds external variables to XQuery expressions. 
 [docs](http://docs.basex.org/wiki/Options#BINDINGS)
 
 #### xquery
+
 Type: `String`
+
 Default value: `null`
+
+Argument: `-q<xquery>`
 
 Executes the specified string as XQuery expression for *each* src / dest pair.
 
@@ -90,25 +132,36 @@ Separates returned query items by newlines (instead of spaces)
 and appends a newline to the end of a result.
 
 #### serializer
+
 Type: `Object`
+
 Default value: `{}`
-Argument(s): `-s<pars>`
+
+Argument(s): `-s<name>=<value>`
 
 Specifies parameters for serializing XQuery results.
 [docs](http://docs.basex.org/wiki/Serialization)
 
 #### update
+
 Type: `Boolean`
+
 Default value: `false`
+
 Argument: `-u`
 
 Write updates back to original files.
 
 #### whitespace
+
 Type: `Boolean`
+
 Default value: `false`
 
+Argument: `-w`
+
 Preserve whitespaces from input files (`-w`).
+
 
 ### Environment
 
@@ -119,7 +172,7 @@ the `env.jar` option (see below).
 
 Download the latest version from [here](http://files.basex.org/releases)
 
-Alternatively `org.basex.BaseX` class must be fount in java `CLASSPATH` by other means [more](http://en.wikipedia.org/wiki/Classpath_(Java)).
+Alternatively `org.basex.BaseX` class must be fount in java `CLASSPATH` by other means [more](http://en.wikipedia.org/wiki/Classpath).
 
 To contain `BaseX`'s data folders in some specific dir you can set
 the env.path option (see below)
@@ -233,11 +286,9 @@ basex({ run: 'some/command/script.bxs'})
 })
 ```
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
-
 ## Release History
-_(Nothing yet)_
+
+0.0.1 - Initial release
 
 ## License
 Copyright (c) 2013 Alexandros Sigalas  
