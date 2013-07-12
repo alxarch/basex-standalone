@@ -22,8 +22,8 @@ var basex = require('../lib/basex-standalone.js');
     test.ifError(value)
 */
 
-basex.env.jar = 'tmp/basex.jar';
-basex.env.path = 'tmp/basex';
+basex.defaults.classpath = 'tmp/basex.jar';
+basex.defaults.basexpath = 'tmp/basex';
 
 var one_to_ten = {
   xquery: '1 to 10'

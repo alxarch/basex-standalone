@@ -63,8 +63,30 @@ as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 
 ### Options
 
-For better understanding of these options see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
 
+Options can be set module-wide:
+
+```javascript
+var basex = require('basex-standalone')
+
+basex.defaults.classpath = 'lib/basex.jar'
+
+```
+
+or on individual instances:
+
+```javascript
+
+var basex = require('basex-standalone')
+
+var b = new basex()
+
+b.defaults.basexpath = '/tmp/instancebasex'
+b.defaults.newline = true
+
+```
+
+For better understanding of these options see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
 
 
 #### run
@@ -164,42 +186,7 @@ Argument: `-w`
 
 Preserve whitespaces from input files (`-w`).
 
-
-### Environment
-
-In order for the module to work java needs access to `org.basex.BaseX` class.
-
-The easiest way is to directly point to a `BaseX.jar` file by setting
-the `env.jar` option (see below).
-
-Download the latest version from [here](http://files.basex.org/releases)
-
-Alternatively `org.basex.BaseX` class must be fount in java `CLASSPATH` by other means [more](http://en.wikipedia.org/wiki/Classpath).
-
-To contain `BaseX`'s data folders in some specific dir you can set
-the env.path option (see below)
-
-Environment settings can be set module-wide:
-
-```javascript
-var basex = require('basex-standalone')
-
-basex.env.jar = 'lib/basex.jar'
-
-```
-
-or on individual instances:
-
-```javascript
-
-var basex = require('basex-standalone')
-var b = new basex()
-
-b.env.path = '/tmp/instancebasex'
-
-```
-
-#### env.java
+#### options.java
 
 Type: `String`
 
@@ -208,25 +195,39 @@ Default value: `/usr/bin/env java`
 Java executable to use.
 
 
-#### env.jar
+#### options.classpath
 
 Type: `String`
 
 Default value: `null`
 
-Path to BaseX.jar.
+`CLASSPATH` defintion to be used by Java [more](http://en.wikipedia.org/wiki/Classpath).
+
+In order for the module to work java needs access to `org.basex.BaseX` class.
+
+Download the latest version from [here](http://files.basex.org/releases)
+
+Alternatively `org.basex.BaseX` class must be available to java system-wide.
+
+Other usefull jar files are: 
+
+- [tagsoup](http://ccil.org/~cowan/XML/tagsoup/) For HTML parsing
+- [saxon](http://www.saxonica.com/welcome/welcome.xml) For XSLT transforms and XSD validations
 
 
-#### env.path
+#### options.basexpath
 
 Type: `String`
 
-Default value: `tmp/basex`
+Default value: `null`
 
 Path for BaseX [Home Directory](http://docs.basex.org/wiki/Configuration#Home_Directory)
 
 > Note that all file paths in commands / script etc 
 > remain relative to node's cwd
+
+
+
 
 ## Examples
 
