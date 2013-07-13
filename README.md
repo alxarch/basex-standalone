@@ -237,9 +237,9 @@ Default value: `/usr/bin/env java`
 Java executable to use.
 
 
-#### options.classpath
+#### classpath
 
-Type: `String`
+Type: `String|Array`
 
 Default value: `null`
 
@@ -257,7 +257,7 @@ Other useful jar files are:
 - [saxon](http://www.saxonica.com/welcome/welcome.xml) For XSLT transforms and XSD validations
 
 
-#### options.basexpath
+#### basexpath
 
 Type: `String`
 
@@ -332,7 +332,8 @@ basex({
 ```
 
 ## Release History
-
+0.1.1 - First actual release
+0.1.0 - First pre-release (Still working out the best approach)
 0.0.1 - Initial release
 
 ## License
