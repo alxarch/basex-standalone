@@ -1,11 +1,6 @@
 'use strict';
 
 var basex = require('../lib/basex-standalone.js');
-var cp = require('child_process');
-var fs = require('fs');
-var path = require('path');
-var os = require('os');
-var Q = require('q');
 
 // var fs = require('fs');
 /*
