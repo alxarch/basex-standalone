@@ -8,7 +8,7 @@ Process data using `XQuery` with `BaseX` in standalone mode.
 
 Install the module with: `npm install basex-standalone`
 
-```javascript
+```js
 var basex = require('basex-standalone');
 
 // prints '1 2 3 4 5 6 7 8 9 10'
@@ -18,17 +18,17 @@ basex({xquery: '1 to 10'}).then(console.log)
 
 Or run as an instance to set individual defaults
 
-```javascript
+```js
 var basex = require('basex-standalone');
 
 var b = new basex()
 
 b.defaults.debug = true
 
-b.env.path = '/tmp/basex'
+b.env.basexpath = '/tmp/basex'
 
 // prints '/tmp/basex/data'
-b.exec({
+b.op({
 	serializer: { method: 'text' },
 	xquery: 'db:system()/mainoptions/dbpath/text()'
 }).then(console.log)
@@ -40,7 +40,7 @@ b.exec({
 
 `BaseX` includes a fast, feature-rich XQuery processor
 that can juggle json, xml, csv and other data easily
-and provides powerfull document manipulation facilities 
+and provides powerful document manipulation facilities 
 by implementing the XQuery Update specification.
 
 For more information about `BaseX`, 
@@ -52,7 +52,7 @@ This module acts as a simple wrapper around `BaseX`'s
 *Standalone Mode* passing arguments via cli and reading back
 stdout/stderr output.
 
-Asyncronous execution is handled with
+Asynchronous execution is handled with
 the *promise* interface, 
 as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 
@@ -60,33 +60,73 @@ as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 > Tip: For better performance, prefer command scripts 
 > over sequential invocations (ie multiple `ADD`, `SET` commands)
 
+## Usage
+
+You can either use the `Promise` based interface:
+
+```js
+var BaseX = require('basex')
+
+var basex = new BaseX()
+
+basex.op({xquery: '1 to 10'}).then(console.log)
+```
+
+Or directly access the `ChildProcess`:
+
+```js
+var BaseX = require('basex')
+
+var basex = new BaseX({classpath: 'path/to/basex.jar'})
+
+var cp = basex.spawn({xquery: '1 to 10'})
+
+cp.stdout.pipe(process.stdout)
+
+```
+
+A shortcut method to the `Promise` interface is to directly call the required module:
+
+```js
+var basex = require('basex')
+
+basex({xquery: '1 to 10'}).then(console.log)
+```
+
 
 ### Options
 
+Both `basex.spawn()` and `basex.op` accept the same set of options.
 
-Options can be set module-wide:
+Default options can be set both on module level:
 
-```javascript
-var basex = require('basex-standalone')
+```js
+var BaseX = require('basex')
 
-basex.defaults.classpath = 'lib/basex.jar'
+BaseX.defaults({
+	classpath: 'path/to/basex.jar'
+})
+```
+
+and on instance level:
+  
+```js
+var BaseX = require('basex')
+
+// Set some defaults on instantiation
+var basex = new Basex({ classpath: 'basex.jar'})
+
+// Modify them
+basex.defaults({
+  	basexpath: '/tmp/basex'
+})
 
 ```
 
-or on individual instances:
+Options object is passed on to `child_process.spawn()` [more](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
 
-```javascript
-
-var basex = require('basex-standalone')
-
-var b = new basex()
-
-b.defaults.basexpath = '/tmp/instancebasex'
-b.defaults.newline = true
-
-```
-
-For better understanding of these options see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
+Options are converted to `BaseX` standalone arguments. 
+For better understanding of these arguments see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
 
 
 #### run
@@ -98,14 +138,9 @@ Default value: `''`
 
 Similar to `RUN` command. [docs](http://docs.basex.org/wiki/Commands#RUN)
 
-The input string may point to an existing file. 
-If the file suffix is `.bxs`, the file content 
-will be evaluated as Command Script; otherwise, 
-the file contents will be evaluated as an XQuery expression.
 
-> Note: The `run` option *only* accepts files as arguments
-> Use the `xquery` and `commands` options in order to 
-> directly evaluate XQuery code and BaseX commands.
+> Note: `run` argument will directly evaluate as XQuery by BaseX if it doesn't point to a file.
+> It is preferable to use the `option.xquery` in order to evaluate XQuery code.
 
 #### commands
 
@@ -142,14 +177,21 @@ Argument: `-q<xquery>`
 Executes the specified string as XQuery expression for *each* src / dest pair.
 
 #### debug
+
 Type: `Boolean`
+
 Default value: `false`
+
 Argument: `-d`
+
 Toggles the debugging mode.
 
 #### newline
+
 Type: `Boolean`
+
 Default value: `false`
+
 Argument: `-L`
 
 Separates returned query items by newlines (instead of spaces) 
@@ -201,7 +243,7 @@ Type: `String`
 
 Default value: `null`
 
-`CLASSPATH` defintion to be used by Java [more](http://en.wikipedia.org/wiki/Classpath).
+`CLASSPATH` definition to be used by Java [more](http://en.wikipedia.org/wiki/Classpath).
 
 In order for the module to work java needs access to `org.basex.BaseX` class.
 
@@ -209,7 +251,7 @@ Download the latest version from [here](http://files.basex.org/releases)
 
 Alternatively `org.basex.BaseX` class must be available to java system-wide.
 
-Other usefull jar files are: 
+Other useful jar files are: 
 
 - [tagsoup](http://ccil.org/~cowan/XML/tagsoup/) For HTML parsing
 - [saxon](http://www.saxonica.com/welcome/welcome.xml) For XSLT transforms and XSD validations
@@ -227,13 +269,11 @@ Path for BaseX [Home Directory](http://docs.basex.org/wiki/Configuration#Home_Di
 > remain relative to node's cwd
 
 
-
-
 ## Examples
 
 Modify a document in-place using xquery
 
-```javascript
+```js
 basex({
 	input: 'path/to/some/file.xml',
 	update: true,
@@ -247,12 +287,12 @@ basex({
 Execute an XQuery script file to 
 query a folder with multiple xml files
 
-```javascript
+```js
 basex({
 	input: 'path/to/some/dir',
 	run: 'path/to/some/script.xql'
 })
-.done(function(output){
+.then(function(output){
 	console.log(output)
 })
 ```
@@ -282,9 +322,11 @@ Execute a BaseX Command Script to batch-process json and xml data
 <commands>
 ```
 
-```javascript
-basex({ run: 'some/command/script.bxs'})
-.done(function(output){
+```js
+basex({ 
+	run: 'some/command/script.bxs'
+})
+.then(function(output){
 	console.log(output)
 })
 ```
@@ -294,5 +336,5 @@ basex({ run: 'some/command/script.bxs'})
 0.0.1 - Initial release
 
 ## License
-Copyright (c) 2013 Alexandros Sigalas  
+Copyright (c) 2013 Alexandros Sigalas
 Licensed under the MIT license.

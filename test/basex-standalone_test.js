@@ -1,6 +1,12 @@
 'use strict';
 
 var basex = require('../lib/basex-standalone.js');
+var cp = require('child_process');
+var fs = require('fs');
+var path = require('path');
+var os = require('os');
+var Q = require('q');
+
 // var fs = require('fs');
 /*
   ======== A Handy Little Nodeunit Reference ========
@@ -35,116 +41,251 @@ exports['basex'] = {
     // setup here
     done()
   },
-  'simple query': function(test) {
+  'sets defaults on new instances': function(test){
+    test.expect(2)
+
+    var b = new basex()
+
+    test.equal(b.defaults.classpath, 'tmp/basex.jar')
+    test.equal(b.defaults.basexpath, 'tmp/basex')
+
+    test.done()
+
+  },
+
+  'defaults get overriden': function(test){
+    test.expect(3)
+
+    var restore =  basex.defaults.xquery
+
+    basex.defaults.xquery = '"A"'
+    var a = new basex()
+    var b = new basex({
+      xquery: '"B"'
+    })
+
+    a.op()
+      .then(function(result){
+        test.equal(result, 'A')
+        return b.op()
+      })
+      .then(function(result){
+        test.equal(result, 'B')
+        return b.op({xquery: '"C"'})
+      })
+      .then(function(result){
+        test.equal(result, "C")
+        basex.defaults.xquery = restore
+        test.done()
+      })
+      .done()
+  },
+
+  'args': function(test){
+    test.expect(1)
+    var args = basex._args()
+    test.
+      equal(args[0], '()')
+      test.done()
+    },
+
+  'args - xquery': function(test){
+    test.expect(1)
+    var args = basex._args({xquery: '1 to 10'})
+    test.equal(args.join(' '), '-q 1 to 10')
+    test.done()
+  },
+
+  'args - debug': function(test){
+    test.expect(1)
+    var args = basex._args({debug: true})
+    test.equal(args.join(' '), '-d ()')
+    test.done()
+  },
+
+  'args - whitespace': function(test){
+    test.expect(1)
+    var args = basex._args({whitespace: true})
+    test.equal(args.join(' '), '-w ()')
+    test.done()
+  },
+
+  'args - newline': function(test){
+    test.expect(1)
+    var args = basex._args({newline: true})
+    test.equal(args.join(' '), '-L ()')
+    test.done()
+  },
+
+  'args - update': function(test){
+    test.expect(1)
+    var args = basex._args({update: true})
+    test.equal(args.join(' '), '-u ()')
+    test.done()
+  },
+
+  'args - bind': function(test){
+    test.expect(1)
+    var args = basex._args({bind: {test: 'ok'}})
+    test.equal(args.join(' '), '-b test=ok ()')
+    test.done()
+  },
+  'args - bind multiple': function(test){
+    test.expect(1)
+    var args = basex._args({bind: {test: 'ok', myVar: 'set'}})
+    test.equal(args.join(' '), '-b test=ok -b myVar=set ()')
+    test.done()
+  },
+
+  'args - serializer': function(test){
+    test.expect(1)
+    var args = basex._args({serializer: {method: 'html'}})
+    test.equal(args.join(' '), '-s method=html ()')
+    test.done()
+  },
+  'args - serializer multiple': function(test){
+    test.expect(1)
+    var args = basex._args({serializer: {method: 'html', version: 5}})
+    test.equal(args.join(' '), '-s method=html -s version=5 ()')
+    test.done()
+  },
+
+  'args - input': function(test){
+    test.expect(1)
+    var args = basex._args({input: 'somefile.xml'})
+    test.equal(args.join(' '), '-i somefile.xml ()')
+    test.done()
+  },
+
+  'args - order': function(test){
+    test.expect(1)
+    var args = basex._args({
+      input: 'somefile.xml', 
+      commands: 'INFO', 
+      xquery: '//a',
+      bind: { test: 'ok'},
+      serializer: {method: 'html'},
+      run: 'run.bxs'
+    })
+    test.equal(args.join(' '), '-b test=ok -i somefile.xml -s method=html -c INFO -q //a run.bxs')
+    test.done()
+  },
+
+  'args - commands': function(test){
+    test.expect(1)
+    var args = basex._args({commands: ['INFO', 'INFO']})
+    test.equal(args.join(' '), '-c INFO;INFO')
+    test.done()
+  },
+
+  'args - run': function(test){
+    test.expect(1)
+    var args = basex._args({run: 'file.xq'})
+    test.equal(args.join(' '), 'file.xq')
+    test.done()
+  },
+  'op - simple query': function(test) {
     test.expect(1);
     // tests here
     var b = new basex()
-    b.exec(one_to_ten).then(function(actual){
-      test.equal(actual, one_to_ten.expect, 'should run simple queries.')
-      test.done()
-    })
+    b.op(one_to_ten)
+      .then(function(actual){
+        test.equal(actual, one_to_ten.expect, 'should run simple queries.')
+        test.done()
+      })
+      .done()
   },
-  'escape xquery': function(test){
+  'op - escapes xquery': function(test){
       test.expect(1);
-      basex({ xquery: 'for $n in 1 to 10 return $n'})
-        .done(function(data){
-            test.equal(data, one_to_ten.expect, "Escapes $ sign properly.")
+      var b = new basex()
+      b.op({ xquery: 'for $n in 1 to 10 return $n || ""'})
+        .then(function(data){
+            test.equal(data, one_to_ten.expect, "Escapes $ and '\"' sign properly.")
             test.done()
         })
+        .done()
   },
-  'debug': function(test) {
-    test.expect(1);
-    // tests here
-    basex({ xquery: '1 to 10wrr-', debug: true})
-      .fail(function(error){
-        var contains = 'org.basex.query.QueryException'
-        test.ok(error.message.indexOf(contains) > -1, 'Debug info in error message.')
-        test.done()
+
+  'op - returns promise': function(test){
+      test.expect(3);
+      var b = new basex()
+      var op = b.op()
+      
+      test.equal(op.constructor.name, 'Promise')
+      test.ok('then' in  op)
+      test.ok('fail' in  op)
+      test.done()
+  },
+
+  'op - uses input doc': function(test){
+      test.expect(1);
+      var b = new basex()
+      b.op({ 
+        input: 'test/fixtures/book.html',
+        xquery: '//abbr/@title/string()'
       })
+        .then(function(data){
+            test.equal(data, 'ok')
+            test.done()
+        })
+        .done()
   },
-  'simple command': function(test) {
-    test.expect(1)
-    // tests here
-   
-    basex({ commands: ['INFO']})
-      .then(function(data){
-        test.ok(data.match(/General Information/), 'should run simple queries.')
-        test.done()
+
+  'op - runs command scripts': function(test){
+      test.expect(1);
+      var b = new basex({newline: true})
+      b.op({ 
+        run: 'test/fixtures/info.bxs'
       })
+        .then(function(data){
+            test.ok(data.match(/General Information/g).length === 3)
+            test.done()
+        })
+        .done()
   },
+
   'callable': function(test) {
     test.expect(1);
-    // tests here
     
     basex(one_to_ten)
       .then(function(data){
-        test.equal(data, one_to_ten.expect, 'should be callable directly.')
+        test.equal(data, one_to_ten.expect, 'Module should be callable directly.')
         test.done()
       })
+      .done()
   },
-  'run xquery': function(test){
+
+  'op - run xquery from file': function(test){
     test.expect(1);
-    basex({
+    var b = new basex()
+    b.op({
       run: 'test/fixtures/query.xql'
-    }).then(function(data){
-      console.log(data)
-      test.equal(data, 'ok', 'should run XQuery files.')
+    })
+    .then(function(data){
+      test.equal(data, 'ok', 'Should run XQuery files.')
       test.done()
     })
-    .fail(function(){
-      test.done(false)
-    })
+    .done()
     
   },
-  'no run xquery inline': function(test){
-    test.expect(1);
-    basex({
-      run: '"1 to 10"'
-    }).then(function(data){
-      test.equal(data, '', 'should run XQuery inline.')
-      test.done()
-    })
-    .fail(function(){
-      test.done(false)
-    })
 
-    
-  },
-  'newline': function(test){
+  'spawn - returns child process': function(test){
     test.expect(1);
-    basex({
-      xquery: '1 to 10',
-      newline: true
-    }).then(function(data){
-      test.ok(data = one_to_ten.expect.replace(' ', "\n"), 'Should split results by newlines.')
-      test.done()
-    })
-    .fail(function(){
-      test.done(false)
-    })
+    var b = new basex()
+    var c = b.spawn()
 
-    
+    test.equal(c.constructor.name, 'ChildProcess')
+    test.done()
   },
-  'run bxs': function(test){
-    test.expect(1);
-    basex({
-      run: 'test/fixtures/info.bxs'
-    }).then(function(data){
-      test.ok(data.match(/General Information/g).length === 3, 'Should run Command Scripts.')
-      test.done()
-    })
-    .fail(function(){
-      test.done(false)
-    })
 
-    
-  },
   'no args': function(test) {
     test.expect(1);
     // tests here
-    basex().then(function(data){
+    basex()
+    .then(function(data){
       test.equal(data, '', 'should run empty without output.')
       test.done()
     })
+    .done()
   },
 };
