@@ -65,21 +65,19 @@ as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 You can either use the `Promise` based interface:
 
 ```js
-var BaseX = require('basex')
+var basex = require('basex')
 
-var basex = new BaseX()
-
-basex.op({xquery: '1 to 10'}).then(console.log)
+basex({xquery: '1 to 10'}).then(console.log)
 ```
 
 Or directly access the `ChildProcess`:
 
 ```js
-var BaseX = require('basex')
+var basex = require('basex')
 
-var basex = new BaseX({classpath: 'path/to/basex.jar'})
+var custom = new BaseX({classpath: 'path/to/basex.jar'})
 
-var cp = basex.spawn({xquery: '1 to 10'})
+var cp = custom.spawn({xquery: '1 to 10'})
 
 cp.stdout.pipe(process.stdout)
 
@@ -91,42 +89,127 @@ A shortcut method to the `Promise` interface is to directly call the required mo
 var basex = require('basex')
 
 basex({xquery: '1 to 10'}).then(console.log)
+
 ```
+
+Which is equivalent to:
+
+```js
+var basex = require('basex')
+var b = new basex()
+b.op({xquery: '1 to 10'}).then(console.log)
+```
+
+Or even faster:
+
+```js
+var basex = require('basex')
+
+basex('task.xq').then(console.log)
+```
+
+Which is equivalent to:
+
+```js
+var basex = require('basex')
+var b = new basex()
+b.op({ run: 'task.xq'}).then(console.log)
+```
+
+### Partials
+
+Partials are a convenience to avoid setting all options on each operation.
+
+```js
+var basex = require('basex-standalone')
+
+var partial = basex.partial({debug: true, newlines: true})
+
+partial('1 to 10')
+partial('test.xql')
+
+```
+
+Calling the module as a constructor is equivalent to creating a partial.
+
+```js
+var partial = basex.partial({debug.true})
+```
+is equal to 
+
+```js
+var partial = new basex({debug: true})
+```
+
+Returns a partially applied function that will always use the provided options as defaults.
+
+
+
+
+
+#### `partial(options)`
+
+Returns: `Promise`
+
+Calling the partial will execute an operation.
+
+#### `partial.spawn(options)`
+
+Returns: `ChildProcess`
+
+Each partial has a `spawn` method that returns the `child_process` directly.
+This can be used as a mode low-level interface than promise objects.
+
+#### `partial.op(options)`
+
+Returns: `Promise`
+
+Equivalent of calling `partial(options)`. Returns a promise object.
+
+
+#### `partial.reset()`
+
+Resets the partial to its initial state.
+
+#### `partial.defaults()`
+
+Returns a deep copy of the default options for the partial.
+
+#### `partial.defaults(key)`
+
+Gets the value of key from the default options for the partial.
+
+#### `partial.defaults(key, value)`
+
+Sets the value of key on the default options for the partial.
+
+#### `partial.defaults(options)`
+
+Sets the value of all key, value pairs on the default options for the partial.
+
+Default options also can be set with the same method on module level using `basex.defaults()`:
+
+```js
+var basex = require('basex')
+
+basex.defaults({
+	classpath: 'path/to/basex.jar'
+})
+
+```
+> These settings affect all future operations.
+
+> Note that upon execution global options are re-merged with the partial's defaults and the operation's options.
+
+To restore the global defaults to their original values use `basex.reset()`
 
 
 ### Options
 
-Both `basex.spawn()` and `basex.op` accept the same set of options.
-
-Default options can be set both on module level:
-
-```js
-var BaseX = require('basex')
-
-BaseX.defaults({
-	classpath: 'path/to/basex.jar'
-})
-```
-
-and on instance level:
-  
-```js
-var BaseX = require('basex')
-
-// Set some defaults on instantiation
-var basex = new Basex({ classpath: 'basex.jar'})
-
-// Modify them
-basex.defaults({
-  	basexpath: '/tmp/basex'
-})
-
-```
-
-Options object is passed on to `child_process.spawn()` [more](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
-
 Options are converted to `BaseX` standalone arguments. 
 For better understanding of these arguments see [Startup Options](http://docs.basex.org/wiki/Startup_Options#BaseX_Standalone).
+
+Options object is also passed on to `child_process.spawn()` [more](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
 
 
 #### run
@@ -135,9 +218,9 @@ Type: `String`
 
 Default value: `''`
 
+The actual operation to run.
 
 Similar to `RUN` command. [docs](http://docs.basex.org/wiki/Commands#RUN)
-
 
 > Note: `run` argument will directly evaluate as XQuery by BaseX if it doesn't point to a file.
 > It is preferable to use the `option.xquery` in order to evaluate XQuery code.
@@ -150,10 +233,7 @@ Default value: `[]`
 
 Argument(s): `-c<COMMAND>`
 
-Execute commands before *each* src / dest pair execution.
-
-In order to execute set of commands *once* before 
-a target use a separate target and a MultiTask
+Execute commands before running the operation.
 
 #### bind
 
@@ -174,7 +254,8 @@ Default value: `null`
 
 Argument: `-q<xquery>`
 
-Executes the specified string as XQuery expression for *each* src / dest pair.
+Executes the specified string as XQuery expression before running the operation 
+and after executing the `options.commands`.
 
 #### debug
 
@@ -323,15 +404,28 @@ Execute a BaseX Command Script to batch-process json and xml data
 ```
 
 ```js
-basex({ 
-	run: 'some/command/script.bxs'
-})
-.then(function(output){
-	console.log(output)
-})
+basex('some/command/script.bxs')
+	.then(function(output){
+		console.log(output)
+	})
 ```
 
+Run several queries against an input document in a queue:
+
+```js
+
+var b = basex.partial({input: 'doc.xml'})
+
+b('//a[@id = "findme"]/string()')
+	.then(function(id){
+		return b.op('//div[@class="'+resolve(id)+'"]')
+	})
+	.then(console.log)
+```
+
+
 ## Release History
+0.2.0 - Partial Environments
 0.1.1 - First actual release
 0.1.0 - First pre-release (Still working out the best approach)
 0.0.1 - Initial release

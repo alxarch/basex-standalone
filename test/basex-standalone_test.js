@@ -1,6 +1,7 @@
 'use strict';
 
 var basex = require('../lib/basex-standalone.js');
+var _ = require('lodash');
 
 // var fs = require('fs');
 /*
@@ -23,41 +24,53 @@ var basex = require('../lib/basex-standalone.js');
     test.ifError(value)
 */
 
-basex.defaults.classpath = 'tmp/basex.jar';
-basex.defaults.basexpath = 'tmp/basex';
-
-var one_to_ten = {
-  xquery: '1 to 10'
-, expect: '1 2 3 4 5 6 7 8 9 10'
-}
-
 exports['basex'] = {
   setUp: function(done) {
     // setup here
+    basex.defaults({
+      classpath: 'tmp/basex.jar',
+      basexpath: 'tmp/basex'
+    })
     done()
   },
+  'defaults - get': function(test){
+    test.expect(1)
+    test.equal(basex.defaults('basexpath'), 'tmp/basex')
+    test.done()
+  },
+  'defaults - set': function(test){
+    test.expect(5)
+    var result = basex.defaults('basexpath', 'other/basex')
+    test.ok(_.isPlainObject(result))
+    test.equal(result.basexpath, 'other/basex')
+    test.equal(basex.defaults('basexpath'), 'other/basex')
+    basex.defaults('basexpath', 'tmp/basex')
+    test.notEqual(basex.defaults('basexpath'), result.basexpath)
+    test.equal(result.basexpath, 'other/basex')
+    test.done()
+  },
   'sets defaults on new instances': function(test){
-    test.expect(2)
+    test.expect(1)
 
-    var b = new basex()
+    var b = new basex({
+      classpath: 'basex.jar'
+    })
 
-    test.equal(b.defaults.classpath, 'tmp/basex.jar')
-    test.equal(b.defaults.basexpath, 'tmp/basex')
+    test.equal(b.defaults('classpath'), 'basex.jar')
 
     test.done()
 
   },
 
   'defaults get overriden': function(test){
-    test.expect(3)
+    test.expect(5)
 
-    var restore =  basex.defaults.xquery
-
-    basex.defaults.xquery = '"A"'
+    basex.defaults('xquery', '"A"')
     var a = new basex()
     var b = new basex({
       xquery: '"B"'
     })
+
 
     a.op()
       .then(function(result){
@@ -65,12 +78,27 @@ exports['basex'] = {
         return b.op()
       })
       .then(function(result){
+        
         test.equal(result, 'B')
-        return b.op({xquery: '"C"'})
+        b.defaults('xquery', '"C"')
+        return b.op()
       })
       .then(function(result){
         test.equal(result, "C")
-        basex.defaults.xquery = restore
+        return b.op({xquery: '"D"'})
+      })
+      .then(function(result){
+        test.equal(result, "D")
+        basex.reset()
+        basex.defaults({
+          classpath : 'tmp/basex.jar',
+          basexpath : 'tmp/basex'
+        })
+
+        return basex()
+      })
+      .then(function(result){
+        test.equal(result, "")
         test.done()
       })
       .done()
@@ -183,9 +211,9 @@ exports['basex'] = {
     test.expect(1);
     // tests here
     var b = new basex()
-    b.op(one_to_ten)
+    b.op('1 to 10')
       .then(function(actual){
-        test.equal(actual, one_to_ten.expect, 'should run simple queries.')
+        test.equal(actual, '1 2 3 4 5 6 7 8 9 10', 'Should run simple queries.')
         test.done()
       })
       .done()
@@ -195,7 +223,7 @@ exports['basex'] = {
       var b = new basex()
       b.op({ xquery: 'for $n in 1 to 10 return $n || ""'})
         .then(function(data){
-            test.equal(data, one_to_ten.expect, "Escapes $ and '\"' sign properly.")
+            test.equal(data, '1 2 3 4 5 6 7 8 9 10', "Escapes $ and '\"' sign properly.")
             test.done()
         })
         .done()
@@ -214,11 +242,11 @@ exports['basex'] = {
 
   'op - uses input doc': function(test){
       test.expect(1);
-      var b = new basex()
-      b.op({ 
-        input: 'test/fixtures/book.html',
-        xquery: '//abbr/@title/string()'
-      })
+      var b = basex.partial({ 
+            input: 'test/fixtures/book.html'
+          })
+
+      b('//abbr/@title/string()')
         .then(function(data){
             test.equal(data, 'ok')
             test.done()
@@ -229,9 +257,7 @@ exports['basex'] = {
   'op - runs command scripts': function(test){
       test.expect(1);
       var b = new basex({newline: true})
-      b.op({ 
-        run: 'test/fixtures/info.bxs'
-      })
+      b.op('test/fixtures/info.bxs')
         .then(function(data){
             test.ok(data.match(/General Information/g).length === 3)
             test.done()
@@ -239,12 +265,23 @@ exports['basex'] = {
         .done()
   },
 
-  'callable': function(test) {
+  'callable - module': function(test) {
     test.expect(1);
     
-    basex(one_to_ten)
+    basex('1 to 10')
       .then(function(data){
-        test.equal(data, one_to_ten.expect, 'Module should be callable directly.')
+        test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Module should be callable directly.')
+        test.done()
+      })
+      .done()
+  },
+
+  'callable - instance': function(test) {
+    test.expect(1);
+    var b = new basex()
+    b.op('1 to 10')
+      .then(function(data){
+        test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Instances should be callable directly.')
         test.done()
       })
       .done()
@@ -253,14 +290,12 @@ exports['basex'] = {
   'op - run xquery from file': function(test){
     test.expect(1);
     var b = new basex()
-    b.op({
-      run: 'test/fixtures/query.xql'
-    })
-    .then(function(data){
-      test.equal(data, 'ok', 'Should run XQuery files.')
-      test.done()
-    })
-    .done()
+    b.op('test/fixtures/query.xql')
+      .then(function(data){
+        test.equal(data, 'ok', 'Should run XQuery files.')
+        test.done()
+      })
+      .done()
     
   },
 
@@ -277,10 +312,10 @@ exports['basex'] = {
     test.expect(1);
     // tests here
     basex()
-    .then(function(data){
-      test.equal(data, '', 'should run empty without output.')
-      test.done()
-    })
-    .done()
+      .then(function(data){
+        test.equal(data, '', 'should run empty without output.')
+        test.done()
+      })
+      .done()
   },
 };
