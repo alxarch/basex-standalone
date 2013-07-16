@@ -73,23 +73,25 @@ exports['job'] = {
         test.done()
     },
     'create-db': function(test){
-        test.expect(4)
+        test.expect(5)
         var j = new Job()
         var jj = j.createdb('test')
         test.ok(jj instanceof Job)
         test.equal(j.queue[0].cmd, 'create-db')
         test.equal(j.queue[0].name, 'test')
-        test.equal(j.queue[0].input, undefined)
+        test.equal(j.db, 'test')
+        test.equal(j.queue[0].txt, undefined)
         test.done()
     },
     'open': function(test){
-        test.expect(4)
+        test.expect(5)
         var j = new Job()
         var jj = j.open('test')
         test.ok(jj instanceof Job)
         test.equal(j.queue[0].cmd, 'open')
         test.equal(j.queue[0].name, 'test')
-        test.equal(j.queue[0].input, undefined)
+        test.equal(j.db, 'test')
+        test.equal(j.queue[0].txt, undefined)
         test.done()
     },
     'export': function(test){
@@ -99,10 +101,10 @@ exports['job'] = {
         test.ok(jj instanceof Job)
         test.equal(j.queue[0].cmd, 'export')
         test.equal(j.queue[0].path, 'test')
-        test.equal(j.queue[0].input, undefined)
+        test.equal(j.queue[0].txt, undefined)
         test.done()
     },
-    'add': function(test){
+    'import': function(test){
         test.expect(1)
         test.ok(true)
         test.done()
@@ -135,6 +137,40 @@ exports['job'] = {
         var jj = j.xquery('1 to 10')
         test.ok(jj instanceof Job)
         test.equal(j.render(), '<commands><xquery><![CDATA[1 to 10]]></xquery></commands>')
+        test.done()
+    },
+    'check': function(test){
+        test.expect(5)
+        var j = new Job()
+        var jj = j.check('test')
+        test.ok(jj instanceof Job)
+        test.equal(j.queue[0].cmd, 'check')
+        test.equal(j.queue[0].input, 'test')
+        test.equal(j.queue[0].txt, undefined)
+        test.equal(j.db, 'test')
+        test.done()
+    },
+    'dropdb': function(test){
+        test.expect(6)
+        var j = new Job()
+        j.open('test')
+        test.equal(j.db, 'test')
+        var jj = j.dropdb('test')
+        test.ok(jj instanceof Job)
+        test.equal(j.queue[1].cmd, 'drop-db')
+        test.equal(j.queue[1].name, 'test')
+        test.equal(j.queue[1].txt, undefined)
+        test.equal(j.db, null)
+        test.done()
+    },
+    'invalid command': function(test){
+        test.expect(1)
+        var j = new Job()
+
+        test.throws(function(){
+            j.command('invalidcommandname')   
+        })
+        
         test.done()
     }
 }
