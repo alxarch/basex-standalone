@@ -1,7 +1,6 @@
 'use strict';
 
 var Job = require('../lib/job.js');
-var _ = require('lodash');
 
 // var fs = require('fs');
 /*
