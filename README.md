@@ -2,37 +2,35 @@
 
 Process data using `XQuery` with `BaseX` in standalone mode.
 
-
 ## Getting Started
 
 
 Install the module with: `npm install basex-standalone`
 
 ```js
+
 var basex = require('basex-standalone');
 
 // prints '1 2 3 4 5 6 7 8 9 10'
 basex({xquery: '1 to 10'}).then(console.log)
-
 ```
 
-Or run as an instance to set individual defaults
+Or create a partial to set individual defaults
 
 ```js
+
 var basex = require('basex-standalone');
 
-var b = new basex()
-
-b.defaults.debug = true
-
-b.env.basexpath = '/tmp/basex'
+var b = basex.partial({
+	debug: true,
+	basexpath: '/tmp/basex'
+})
 
 // prints '/tmp/basex/data'
-b.op({
+b({
 	serializer: { method: 'text' },
 	xquery: 'db:system()/mainoptions/dbpath/text()'
 }).then(console.log)
-
 ```
 
 ## Documentation
@@ -52,12 +50,11 @@ This module acts as a simple wrapper around `BaseX`'s
 *Standalone Mode* passing arguments via cli and reading back
 stdout/stderr output.
 
-Asynchronous execution is handled with
-the *promise* interface, 
+Asynchronous execution is handled with the *promise* interface, 
 as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 
 
-> Tip: For better performance, prefer command scripts 
+> Tip: For better performance, prefer [Command Scripts](http://docs.basex.org/wiki/Commands#Command_Scripts)
 > over sequential invocations (ie multiple `ADD`, `SET` commands)
 
 ## Usage
@@ -65,6 +62,7 @@ as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
 You can either use the `Promise` based interface:
 
 ```js
+
 var basex = require('basex')
 
 basex({xquery: '1 to 10'}).then(console.log)
@@ -73,47 +71,14 @@ basex({xquery: '1 to 10'}).then(console.log)
 Or directly access the `ChildProcess`:
 
 ```js
+
 var basex = require('basex')
 
-var custom = new BaseX({classpath: 'path/to/basex.jar'})
+var custom = basex.partial({classpath: 'path/to/basex.jar'})
 
 var cp = custom.spawn({xquery: '1 to 10'})
 
 cp.stdout.pipe(process.stdout)
-
-```
-
-A shortcut method to the `Promise` interface is to directly call the required module:
-
-```js
-var basex = require('basex')
-
-basex({xquery: '1 to 10'}).then(console.log)
-
-```
-
-Which is equivalent to:
-
-```js
-var basex = require('basex')
-var b = new basex()
-b.op({xquery: '1 to 10'}).then(console.log)
-```
-
-Or even faster:
-
-```js
-var basex = require('basex')
-
-basex('task.xq').then(console.log)
-```
-
-Which is equivalent to:
-
-```js
-var basex = require('basex')
-var b = new basex()
-b.op({ run: 'task.xq'}).then(console.log)
 ```
 
 ### Partials
@@ -121,30 +86,33 @@ b.op({ run: 'task.xq'}).then(console.log)
 Partials are a convenience to avoid setting all options on each operation.
 
 ```js
+
 var basex = require('basex-standalone')
 
 var partial = basex.partial({debug: true, newlines: true})
 
 partial('1 to 10')
 partial('test.xql')
-
 ```
 
 Calling the module as a constructor is equivalent to creating a partial.
 
 ```js
+
 var partial = basex.partial({debug.true})
 ```
 is equal to 
 
 ```js
+
 var partial = new basex({debug: true})
 ```
 
+#### `basex.partial(defaults)`
+
+Returns: `Function`
+
 Returns a partially applied function that will always use the provided options as defaults.
-
-
-
 
 
 #### `partial(options)`
@@ -190,14 +158,15 @@ Sets the value of all key, value pairs on the default options for the partial.
 Default options also can be set with the same method on module level using `basex.defaults()`:
 
 ```js
+
 var basex = require('basex')
 
 basex.defaults({
 	classpath: 'path/to/basex.jar'
 })
-
 ```
-> These settings affect all future operations.
+
+> These settings affect *all* future operations.
 
 > Note that upon execution global options are re-merged with the partial's defaults and the operation's options.
 
@@ -212,7 +181,7 @@ For better understanding of these arguments see [Startup Options](http://docs.ba
 Options object is also passed on to `child_process.spawn()` [more](http://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
 
 
-#### run
+#### `run`
 
 Type: `String`
 
@@ -225,7 +194,7 @@ Similar to `RUN` command. [docs](http://docs.basex.org/wiki/Commands#RUN)
 > Note: `run` argument will directly evaluate as XQuery by BaseX if it doesn't point to a file.
 > It is preferable to use the `option.xquery` in order to evaluate XQuery code.
 
-#### commands
+#### `commands`
 
 Type: `String|Array`
 
@@ -235,7 +204,7 @@ Argument(s): `-c<COMMAND>`
 
 Execute commands before running the operation.
 
-#### bind
+#### `bind`
 
 Type: `Object`
 
@@ -246,7 +215,7 @@ Argument(s): `-b<name>=<val>`
 Binds external variables to XQuery expressions. 
 [docs](http://docs.basex.org/wiki/Options#BINDINGS)
 
-#### xquery
+#### `xquery`
 
 Type: `String`
 
@@ -257,7 +226,7 @@ Argument: `-q<xquery>`
 Executes the specified string as XQuery expression before running the operation 
 and after executing the `options.commands`.
 
-#### debug
+#### `debug`
 
 Type: `Boolean`
 
@@ -267,7 +236,30 @@ Argument: `-d`
 
 Toggles the debugging mode.
 
-#### newline
+
+#### `input`
+
+Type: `String`
+
+Default value: `null`
+
+Argument: `-i<input>`
+
+Sets file/directory to use as context.
+
+
+#### `output`
+
+Type: `String`
+
+Default value: `null`
+
+Argument: `-o<output>`
+
+Sets file to write all output to.
+
+
+#### `newline`
 
 Type: `Boolean`
 
@@ -278,7 +270,7 @@ Argument: `-L`
 Separates returned query items by newlines (instead of spaces) 
 and appends a newline to the end of a result.
 
-#### serializer
+#### `serializer`
 
 Type: `Object`
 
@@ -289,7 +281,7 @@ Argument(s): `-s<name>=<value>`
 Specifies parameters for serializing XQuery results.
 [docs](http://docs.basex.org/wiki/Serialization)
 
-#### update
+#### `update`
 
 Type: `Boolean`
 
@@ -299,7 +291,7 @@ Argument: `-u`
 
 Write updates back to original files.
 
-#### whitespace
+#### `whitespace`
 
 Type: `Boolean`
 
@@ -309,7 +301,7 @@ Argument: `-w`
 
 Preserve whitespaces from input files (`-w`).
 
-#### options.java
+#### `java`
 
 Type: `String`
 
@@ -318,7 +310,7 @@ Default value: `/usr/bin/env java`
 Java executable to use.
 
 
-#### classpath
+#### `classpath`
 
 Type: `String|Array`
 
@@ -338,7 +330,7 @@ Other useful jar files are:
 - [saxon](http://www.saxonica.com/welcome/welcome.xml) For XSLT transforms and XSD validations
 
 
-#### basexpath
+#### `basexpath`
 
 Type: `String`
 
@@ -348,6 +340,105 @@ Path for BaseX [Home Directory](http://docs.basex.org/wiki/Configuration#Home_Di
 
 > Note that all file paths in commands / script etc 
 > remain relative to node's cwd
+
+
+## `basex.Job`
+
+A convenience object that generates `BaseX` [Command Scripts](http://docs.basex.org/wiki/Commands#Command_Scripts).
+
+All `Job` methods except `Job.render()` are chainable.
+
+
+### `job.command(name, input, params), job.command(name, params)`
+
+`name`: the tagname of the command (`drop-db`)
+
+Appends a command to the script.
+
+All command name, input, and params are validated 
+and relevant errors are thrown.
+
+### `job.requires(module1, module2, ..., moduleN)`
+
+Adds a `REPO INSTALL <file>` command for each argument.
+
+### `job.bind(key, value), job.bind(bindings)`
+
+Binds parameters for XQuery external variables.
+
+These bindings are collected and *prepended* to the command script 
+before all other commands upon rendering.
+
+### `job.execute(command)`
+
+Appends an `EXECUTE` command. 
+If `command` can be a `basex.Job` instance.
+
+### `job.xquery(xquery)`
+
+Appends an `XQUERY` command.
+
+### `job.import(files, path, options), job.import(files), job.import(files, options)`
+
+Imports files.
+
+In order to specify parsing options for the files without affecting
+global options, it appends an `EXECUTE` command that executes 
+a child Command Script. Options that can be set are:
+
+#### `options.db`
+
+Specify the database to add files to. 
+If not set the currently opened database will be used.
+If no db is currently open or the specified database does not exist
+the script will fail upon execution.
+
+#### `options.{createfilter, addarchives, skipcorrupt, addraw, parser, parseropt, htmlopt}`
+
+See [Parsing Options](http://docs.basex.org/wiki/Options#Parsing)
+
+#### `options.{chop, intparse}`
+See [Parsing Options](http://docs.basex.org/wiki/Options#XML_Parsing)
+
+
+### `job.set(option, value), job.set(options)`
+
+`option`: Option name to set.
+`value`: Value to set the option to.
+
+or 
+
+`options`: Object of option/value pairs.
+
+Appends single/multiple `SET` command.
+
+### `job.export(path)`
+
+Appends an `EXPORT <path>` command.
+
+### `job.check(db)`
+
+Appends an `CHECK <db>` command.
+
+### `job.open(db)`
+
+Appends an `OPEN <db>` command.
+
+### `job.close()`
+
+Appends a `CLOSE` command.
+
+### `job.run(file)`
+
+Appends a `RUN` command.
+
+### `job.render()`
+
+Renders the xml for this Command Script.
+
+### `job.toString()`
+
+Alias of `job.render()`
 
 
 ## Examples
@@ -410,6 +501,28 @@ basex('some/command/script.bxs')
 	})
 ```
 
+Or do the same with a `basex.Job`:
+
+```js
+
+var job = new basex.Job()
+
+job.command('info')
+	.createdb('test')
+	.import('some/file.xml', 'test.xml')
+	.import('somedir/with/json/files', {
+		parser: 'json',
+		createfilter: '*.json'
+	})
+	.xquery("for $book ...")
+	.dropdb('test')
+
+basex(job).then(function(output){
+		console.log(output)
+	})
+```
+
+
 Run several queries against an input document in a queue:
 
 ```js
@@ -425,6 +538,7 @@ b('//a[@id = "findme"]/string()')
 
 
 ## Release History
+0.3.0 - Command Script builder
 0.2.0 - Partial Environments
 0.1.1 - First actual release
 0.1.0 - First pre-release (Still working out the best approach)
