@@ -1,4 +1,5 @@
 declare option output:method 'json';
+declare option db:parser 'html';
 
 declare function local:param($param){
    if(not(contains($param, '='))) then () else
@@ -31,7 +32,8 @@ declare function local:param($param){
      return
      element {$tag[1]} {(
         attribute type {'object'},
-       <input-required type="boolean">{ contains($def, '>[input]<') }</input-required>,
+       <input type="boolean">{ not(contains($def, '/>')) }</input>,
+       <definition>{ $def }</definition>,
        <params type="object">
          <required type="object">
            {

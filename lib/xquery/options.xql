@@ -1,4 +1,6 @@
 declare option output:method 'json';
+declare option db:parser 'html';
+
 <json type="object">
 {
   for $def in doc("http://docs.basex.org/wiki/Options")

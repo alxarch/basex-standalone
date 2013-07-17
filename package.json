@@ -20,7 +20,7 @@
       "url": "https://github.com/alxarch/basex-standalone/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "lib/basex-standalone",
+  "main": "lib/basex",
   "engines": {
     "node": ">= 0.8.0"
   },

@@ -1,6 +1,6 @@
 'use strict';
 
-var basex = require('../lib/basex-standalone.js');
+var basex = require('../lib/basex.js');
 var _ = require('lodash');
 
 // var fs = require('fs');

@@ -32,13 +32,32 @@ exports['job'] = {
 
         j.requires('test.xqm')
 
-        test.equal(j.queue[0].cmd, 'repo-install')
+        test.equal(j.queue[0].__cmd__, 'repo-install')
         test.equal(j.queue[0].path, 'test.xqm')
-        test.equal(j.queue[1].cmd, 'info')
+        test.equal(j.queue[1].__cmd__, 'info')
         test.equal(j.queue.length, 2)
 
         test.done()
     },
+    'requires - multiple modules': function(test){
+        test.expect(8)
+        var j = new Job()
+
+        j.command('info')
+
+        j.requires('one.xqm', ['two.xqm', 'three.xqm'])
+        test.equal(j.queue[0].__cmd__, 'repo-install')
+        test.equal(j.queue[0].path, 'three.xqm')
+        test.equal(j.queue[1].__cmd__, 'repo-install')
+        test.equal(j.queue[1].path, 'two.xqm')
+        test.equal(j.queue[2].__cmd__, 'repo-install')
+        test.equal(j.queue[2].path, 'one.xqm')
+        test.equal(j.queue[3].__cmd__, 'info')
+        test.equal(j.queue.length, 4)
+        
+        test.done()
+    },
+
     'render - no commands': function(test){
         test.expect(1)
         var j = new Job()
@@ -52,21 +71,21 @@ exports['job'] = {
         var c = j.queue[0]
 
         test.ok(result instanceof Job)
-        test.equal(c.cmd, 'add');
-        test.equal(c.txt, 'input');
+        test.equal(c.__cmd__, 'add');
+        test.equal(c.__input__, 'input');
         test.equal(c.path, 'value');
 
         j.command('info')
         c = j.queue[1]
-        test.equal(c.cmd, 'info');
-        test.equal(c.txt, undefined);
+        test.equal(c.__cmd__, 'info');
+        test.equal(c.__input__, undefined);
         test.equal(Object.keys(c).length, 2);
 
         j.command('create-db', {name: 'test'})
         c = j.queue[2]
 
-        test.equal(c.cmd, 'create-db');
-        test.equal(c.txt, undefined);
+        test.equal(c.__cmd__, 'create-db');
+        test.equal(c.__input__, undefined);
         test.equal(c.name, 'test');
         test.equal(Object.keys(c).length, 3);
 
@@ -77,10 +96,10 @@ exports['job'] = {
         var j = new Job()
         var jj = j.createdb('test')
         test.ok(jj instanceof Job)
-        test.equal(j.queue[0].cmd, 'create-db')
+        test.equal(j.queue[0].__cmd__, 'create-db')
         test.equal(j.queue[0].name, 'test')
         test.equal(j.db, 'test')
-        test.equal(j.queue[0].txt, undefined)
+        test.equal(j.queue[0].__input__, undefined)
         test.done()
     },
     'open': function(test){
@@ -88,10 +107,10 @@ exports['job'] = {
         var j = new Job()
         var jj = j.open('test')
         test.ok(jj instanceof Job)
-        test.equal(j.queue[0].cmd, 'open')
+        test.equal(j.queue[0].__cmd__, 'open')
         test.equal(j.queue[0].name, 'test')
         test.equal(j.db, 'test')
-        test.equal(j.queue[0].txt, undefined)
+        test.equal(j.queue[0].__input__, undefined)
         test.done()
     },
     'export': function(test){
@@ -99,9 +118,9 @@ exports['job'] = {
         var j = new Job()
         var jj = j.export('test')
         test.ok(jj instanceof Job)
-        test.equal(j.queue[0].cmd, 'export')
+        test.equal(j.queue[0].__cmd__, 'export')
         test.equal(j.queue[0].path, 'test')
-        test.equal(j.queue[0].txt, undefined)
+        test.equal(j.queue[0].__input__, undefined)
         test.done()
     },
     'import': function(test){
@@ -144,9 +163,9 @@ exports['job'] = {
         var j = new Job()
         var jj = j.check('test')
         test.ok(jj instanceof Job)
-        test.equal(j.queue[0].cmd, 'check')
+        test.equal(j.queue[0].__cmd__, 'check')
         test.equal(j.queue[0].input, 'test')
-        test.equal(j.queue[0].txt, undefined)
+        test.equal(j.queue[0].__input__, undefined)
         test.equal(j.db, 'test')
         test.done()
     },
@@ -157,9 +176,9 @@ exports['job'] = {
         test.equal(j.db, 'test')
         var jj = j.dropdb('test')
         test.ok(jj instanceof Job)
-        test.equal(j.queue[1].cmd, 'drop-db')
+        test.equal(j.queue[1].__cmd__, 'drop-db')
         test.equal(j.queue[1].name, 'test')
-        test.equal(j.queue[1].txt, undefined)
+        test.equal(j.queue[1].__input__, undefined)
         test.equal(j.db, null)
         test.done()
     },
