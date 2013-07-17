@@ -180,6 +180,13 @@ exports['basex'] = {
     test.done()
   },
 
+  'args - output': function(test){
+    test.expect(1)
+    var args = basex._args({output: 'somefile.xml'})
+    test.equal(args.join(' '), '-o somefile.xml ()')
+    test.done()
+  },
+
   'args - order': function(test){
     test.expect(1)
     var args = basex._args({
