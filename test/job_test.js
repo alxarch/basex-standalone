@@ -1,6 +1,10 @@
 'use strict';
 
 var Job = require('../lib/job.js');
+var format = require('util').format;
+var uuid = function(){
+        return require('crypto').randomBytes(32).toString('hex')
+    } ;
 
 // var fs = require('fs');
 /*
@@ -124,8 +128,106 @@ exports['job'] = {
         test.done()
     },
     'import': function(test){
+        test.expect(4)
+        
+        var j = new Job()
+        var db = uuid()
+        j.open(db)
+        var jj = j.import('file.xml')
+        test.ok(jj instanceof Job)
+        test.equal(j.queue.length, 2)
+        test.equal(j.queue[1].__cmd__, 'execute')
+        var expect = format('<commands><open name="%s"/><add>file.xml</add></commands>', db)
+        test.equal(j.queue[1].__input__.toString(), expect)
+        test.done()
+    },
+    'import - without opened db': function(test){
         test.expect(1)
-        test.ok(true)
+        var j = new Job()
+        test.throws(function(){
+            j.import('file.xml')
+        })
+        test.done()
+    },
+    'import - multiple': function(test){
+        test.expect(15)
+
+        var j = new Job()
+        var db = uuid()
+        j.check(db)
+        var jj = j.import(['a.xml', 'b.xml', 'c/'], 'path/')
+        
+        test.ok(jj instanceof Job)
+        test.equal(j.queue.length, 2)
+        test.equal(j.queue[1].__cmd__, 'execute')
+
+        var child = j.queue[1].__input__
+
+        test.equal(child.queue.length, 4)
+        test.equal(child.queue[0].__cmd__, 'open')
+        test.equal(child.queue[0].name, db)
+        
+        test.equal(child.queue[1].__cmd__, 'add')
+        test.equal(child.queue[1].__input__, 'a.xml')
+        test.equal(child.queue[1].path, 'path/a.xml')
+
+        test.equal(child.queue[2].__cmd__, 'add')
+        test.equal(child.queue[2].__input__, 'b.xml')
+        test.equal(child.queue[2].path, 'path/b.xml')
+
+        test.equal(child.queue[3].__cmd__, 'add')
+        test.equal(child.queue[3].__input__, 'c/')
+        test.equal(child.queue[3].path, 'path/c/')
+        
+        test.done()
+    },
+    'import - options': function(test){
+        test.expect(21)
+
+        var j = new Job()
+        var db = uuid()
+        var opt = {
+            parser: 'json', 
+            createfilter: '*.json',
+            addraw: true,
+            writeback: true
+        };
+
+        j.check(db)
+        var jj = j.import(['a.json', 'b.json'], 'path/', opt)
+        
+        test.ok(jj instanceof Job)
+        test.equal(j.queue.length, 2)
+        test.equal(j.queue[1].__cmd__, 'execute')
+
+        var child = j.queue[1].__input__
+
+        test.equal(child.queue.length, 6)
+        test.equal(child.queue[0].__cmd__, 'open')
+        test.equal(child.queue[0].name, db)
+
+        test.equal(child.queue[1].__cmd__, 'set')
+        test.equal(child.queue[1].option, 'parser')
+        test.equal(child.queue[1].__input__, 'json')
+
+        test.equal(child.queue[2].__cmd__, 'set')
+        test.equal(child.queue[2].option, 'createfilter')
+        test.equal(child.queue[2].__input__, '*.json')
+
+        
+        test.equal(child.queue[3].__cmd__, 'set')
+        test.equal(child.queue[3].option, 'addraw')
+        test.equal(child.queue[3].__input__, true)
+
+        
+        test.equal(child.queue[4].__cmd__, 'add')
+        test.equal(child.queue[4].__input__, 'a.json')
+        test.equal(child.queue[4].path, 'path/a.json')
+
+        test.equal(child.queue[5].__cmd__, 'add')
+        test.equal(child.queue[5].__input__, 'b.json')
+        test.equal(child.queue[5].path, 'path/b.json')
+        
         test.done()
     },
     'bind': function(test){
@@ -187,7 +289,7 @@ exports['job'] = {
         var j = new Job()
 
         test.throws(function(){
-            j.command('invalidcommandname')   
+            j.command('invalid-command-name')
         })
         
         test.done()
