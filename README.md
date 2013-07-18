@@ -538,11 +538,7 @@ b('//a[@id = "findme"]/string()')
 
 
 ## Release History
-0.3.0 - Command Script builder
-0.2.0 - Partial Environments
-0.1.1 - First actual release
-0.1.0 - First pre-release (Still working out the best approach)
-0.0.1 - Initial release
+1.0.0 - First Official Release
 
 ## License
 Copyright (c) 2013 Alexandros Sigalas
