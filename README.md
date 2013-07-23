@@ -538,6 +538,7 @@ b('//a[@id = "findme"]/string()')
 
 
 ## Release History
+1.0.1 - fix multiple values for `options.classpath` 
 1.0.0 - First Official Release
 
 ## License

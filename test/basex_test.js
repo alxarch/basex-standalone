@@ -325,4 +325,20 @@ exports['basex'] = {
       })
       .done()
   },
+
+  'classpath - multiple': function(test){
+    test.expect(2);
+
+    test.doesNotThrow(function(){
+      basex({
+        classpath: ['tmp/basex.jar', 'tmp/tagsoup.jar'],
+        xquery: '1 to 10'
+      })
+      .then(function(data){
+        test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Should accept multiple jars as classpath.')
+        test.done()
+      })
+    })
+
+  }
 };

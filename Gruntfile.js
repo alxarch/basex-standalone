@@ -1,12 +1,17 @@
 'use strict';
 
 module.exports = function(grunt) {
+  var ident = grunt.util._.identity
   // Project configuration.
   grunt.initConfig({
     curl: {
       basex:{
         src: 'http://files.basex.org/releases/BaseX.jar'
       , dest: 'tmp/basex.jar'
+      }
+    , tagsoup:{
+        src: 'http://ccil.org/~cowan/XML/tagsoup/tagsoup-1.2.1.jar'
+      , dest: 'tmp/tagsoup.jar'
       }
     },
     nodeunit: {
@@ -27,7 +32,7 @@ module.exports = function(grunt) {
       },
     },
     clean: {
-      files: ['tmp/*', '!tmp/basex.jar', '!tmp/basex', 'tmp/basex/*']
+      files: ['tmp/*', '!tmp/*.jar', '!tmp/basex', 'tmp/basex/*']
     },
     watch: {
       gruntfile: {
@@ -54,8 +59,14 @@ module.exports = function(grunt) {
 
   grunt.file.mkdir('tmp/basex')
 
-  var jar = grunt.file.isFile('tmp/basex.jar')
-    , testTasks = [ jar ? undefined : 'curl:basex', 'clean', 'nodeunit'].filter(function(t){ return t })
+  var getbasex = !grunt.file.isFile('tmp/basex.jar')
+    , gettagsoup = !grunt.file.isFile('tmp/tagsoup.jar')
+    , testTasks = [ 
+      getbasex && 'curl:basex', 
+      gettagsoup && 'curl:tagsoup', 
+      'clean', 
+      'nodeunit'
+    ].filter(ident)
 
   grunt.registerTask('test', 'Runs tests', testTasks)
 
