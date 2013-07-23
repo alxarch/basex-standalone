@@ -1,7 +1,7 @@
 {
   "name": "basex-standalone",
   "description": "Process data using XQuery with BaseX in standalone mode.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/alxarch/basex-standalone",
   "author": {
     "name": "Alexandros Sigalas",
