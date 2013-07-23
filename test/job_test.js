@@ -29,35 +29,25 @@ var uuid = function(){
 
 exports['job'] = {
     'requires': function(test){
-        test.expect(4)
+        test.expect(2)
         var j = new Job()
-
-        j.command('info')
 
         j.requires('test.xqm')
 
-        test.equal(j.queue[0].__cmd__, 'repo-install')
-        test.equal(j.queue[0].path, 'test.xqm')
-        test.equal(j.queue[1].__cmd__, 'info')
-        test.equal(j.queue.length, 2)
+        test.equal(j.modules.length, 1)
+        test.equal(j.modules[0], 'test.xqm')
 
         test.done()
     },
     'requires - multiple modules': function(test){
-        test.expect(8)
+        test.expect(4)
         var j = new Job()
 
-        j.command('info')
-
         j.requires('one.xqm', ['two.xqm', 'three.xqm'])
-        test.equal(j.queue[0].__cmd__, 'repo-install')
-        test.equal(j.queue[0].path, 'three.xqm')
-        test.equal(j.queue[1].__cmd__, 'repo-install')
-        test.equal(j.queue[1].path, 'two.xqm')
-        test.equal(j.queue[2].__cmd__, 'repo-install')
-        test.equal(j.queue[2].path, 'one.xqm')
-        test.equal(j.queue[3].__cmd__, 'info')
-        test.equal(j.queue.length, 4)
+        test.equal(j.modules.length, 3)
+        test.equal(j.modules[0], 'one.xqm')
+        test.equal(j.modules[1], 'two.xqm')
+        test.equal(j.modules[2], 'three.xqm')
         
         test.done()
     },
@@ -292,6 +282,15 @@ exports['job'] = {
             j.command('invalid-command-name')
         })
         
+        test.done()
+    },
+    'render - modules': function(test){
+        test.expect(2)
+        var j = new Job()
+        j.requires('a.xqm', 'b.xqm')
+        j.command('info')
+        test.equal(j.render(), '<commands><repo-install path="a.xqm"/><repo-install path="b.xqm"/><info/></commands>')
+        test.equal(j.queue.length, 1)
         test.done()
     }
 }
