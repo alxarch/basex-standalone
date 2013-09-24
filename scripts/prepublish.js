@@ -1,36 +1,58 @@
 var http = require('http');
 var fs = require('fs');
-var Q = require('Q');
+var basex = 'http://files.basex.org/releases/BaseX.jar';
+var tagsoup = 'http://ccil.org/~cowan/XML/tagsoup/tagsoup-1.2.1.jar';
 
-function download(filename, url, msg) {
-	var def = Q.defer();
-	var file = fs.createWriteStream(filename);
-	console.log(msg)
-	var request = http.get(url, function(response) {
-	    response.pipe(file);
-	   	response.on('end', function(){
-	   		def.resolve()
-	   	}) 
-	   	response.on('error', function(e){
-	   		def.reject(e)
-	   	})
-	});
+function downloadBaseX(cb){
+	console.log('Downloading BaseX jar...')
 
-	request.on('error', function(e){
-		def.reject(e)
+	download('lib/basex.jar', basex, function(e){
+		if(e){
+			console.log('Failed to download BaseX!')
+			console.log('org.basex.BaseX class must be available on the classpath.');
+		}
+		else{
+			console.log('Done!')
+			if(cb) cb()
+		}
 	})
+};
 
-	return def.promise;
+function downloadTagsoup(cb){
+	console.log('Downloading TagSoup jar...')
+	download('lib/tagsoup.jar', tagsoup, function(e){
+		if(e) 
+			console.log('Failed to download TagSoup, html importing will not be available.');
+		else{
+			console.log('Done!')
+			if(cb) cb()
+		} 
+	})
 }
 
-Q.all([
-	download('lib/basex.jar', 'http://files.basex.org/releases/BaseX.jar', 'Downloading latest BaseX jar.'),
-	download('lib/tagsoup.jar', 'http://ccil.org/~cowan/XML/tagsoup/tagsoup-1.2.1.jar', 'Downloading TagSoup jar.')
-])
-.fail(function(){
-	console.log('Failed to download latest BaseX jar. Try to run `npm install` again later.')
-})
-.then(function(){
-	console.log('Done!')
-})
-.done();
+function download(filename, url, cb) {
+	if(fs.existsSync(filename)) {
+		if(cb) cb()
+	}
+	else{
+
+		
+		var file = fs.createWriteStream(filename);
+		var request = http.get(url, function(response) {
+		    response.pipe(file);
+		   	response.on('end', function(){
+				if(cb) cb()
+		   	}) 
+		   	response.on('error', function(e){
+				if(cb) cb(e)
+		   	})
+		});
+
+		request.on('error', function(e){
+			if(cb) cb(e)
+		})
+	}
+
+}
+
+downloadBaseX(downloadTagsoup)
