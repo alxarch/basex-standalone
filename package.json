@@ -25,7 +25,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "prepublish": "grunt prepublish",
+    "prepublish": "node scripts/prepublish.js",
     "test": "grunt test"
   },
   "devDependencies": {
