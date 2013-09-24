@@ -7,11 +7,11 @@ module.exports = function(grunt) {
     curl: {
       basex:{
         src: 'http://files.basex.org/releases/BaseX.jar'
-      , dest: 'tmp/basex.jar'
+      , dest: 'lib/basex.jar'
       }
     , tagsoup:{
         src: 'http://ccil.org/~cowan/XML/tagsoup/tagsoup-1.2.1.jar'
-      , dest: 'tmp/tagsoup.jar'
+      , dest: 'lib/tagsoup.jar'
       }
     },
     nodeunit: {
@@ -32,7 +32,7 @@ module.exports = function(grunt) {
       },
     },
     clean: {
-      files: ['tmp/*', '!tmp/*.jar', '!tmp/basex', 'tmp/basex/*']
+      files: ['tmp/*', '!tmp/basex', 'tmp/basex/*']
     },
     watch: {
       gruntfile: {
@@ -59,8 +59,8 @@ module.exports = function(grunt) {
 
   grunt.file.mkdir('tmp/basex')
 
-  var getbasex = !grunt.file.isFile('tmp/basex.jar')
-    , gettagsoup = !grunt.file.isFile('tmp/tagsoup.jar')
+  var getbasex = !grunt.file.isFile('lib/basex.jar')
+    , gettagsoup = !grunt.file.isFile('lib/tagsoup.jar')
     , testTasks = [ 
       getbasex && 'curl:basex', 
       gettagsoup && 'curl:tagsoup', 
@@ -72,5 +72,5 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', ['jshint', 'test']);
-
+  grunt.registerTask('prepublish', ['curl:basex', 'curl:tagsoup']);
 }

@@ -28,7 +28,7 @@ exports['basex'] = {
   setUp: function(done) {
     // setup here
     basex.defaults({
-      classpath: 'tmp/basex.jar',
+      classpath: ['lib/basex.jar','lib/basex.jar'],
       basexpath: 'tmp/basex'
     })
     done()
@@ -71,7 +71,6 @@ exports['basex'] = {
       xquery: '"B"'
     })
 
-
     a.op()
       .then(function(result){
         test.equal(result, 'A')
@@ -91,7 +90,7 @@ exports['basex'] = {
         test.equal(result, "D")
         basex.reset()
         basex.defaults({
-          classpath : 'tmp/basex.jar',
+          classpath : 'lib/basex.jar',
           basexpath : 'tmp/basex'
         })
 
@@ -331,13 +330,14 @@ exports['basex'] = {
 
     test.doesNotThrow(function(){
       basex({
-        classpath: ['tmp/basex.jar', 'tmp/tagsoup.jar'],
+        classpath: ['lib/basex.jar', 'lib/tagsoup.jar'],
         xquery: '1 to 10'
       })
       .then(function(data){
         test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Should accept multiple jars as classpath.')
         test.done()
       })
+      .done()
     })
 
   }
