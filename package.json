@@ -1,7 +1,7 @@
 {
   "name": "basex-standalone",
   "description": "Process data using XQuery with BaseX in standalone mode.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "homepage": "https://github.com/alxarch/basex-standalone",
   "author": {
     "name": "Alexandros Sigalas",
@@ -33,7 +33,7 @@
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-watch": "~0.4.0",
     "grunt": "~0.4.1",
-    "grunt-contrib-clean": "~0.4.1",
+    "grunt-contrib-clean": "~0.4.1", 
     "nodeunit": "~0.8.1"
   },
   "keywords": [
