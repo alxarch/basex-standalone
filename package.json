@@ -1,7 +1,7 @@
 {
   "name": "basex-standalone",
   "description": "Process data using XQuery with BaseX in standalone mode.",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "homepage": "https://github.com/alxarch/basex-standalone",
   "author": {
     "name": "Alexandros Sigalas",
@@ -25,7 +25,7 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "prepublish": "node scripts/prepublish.js",
+    "install": "node scripts/install.js",
     "test": "grunt test"
   },
   "devDependencies": {
