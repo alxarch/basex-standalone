@@ -1,7 +1,6 @@
 'use strict';
 
 var basex = require('../lib/basex.js');
-var _ = require('lodash');
 
 // var fs = require('fs');
 /*
@@ -23,86 +22,9 @@ var _ = require('lodash');
     test.doesNotThrow(block, [error], [message])
     test.ifError(value)
 */
+var b = basex.partial({basexpath: 'tmp/basex'})
 
 exports['basex'] = {
-  setUp: function(done) {
-    // setup here
-    basex.defaults({
-      classpath: ['lib/basex.jar','lib/basex.jar'],
-      basexpath: 'tmp/basex'
-    })
-    done()
-  },
-  'defaults - get': function(test){
-    test.expect(1)
-    test.equal(basex.defaults('basexpath'), 'tmp/basex')
-    test.done()
-  },
-  'defaults - set': function(test){
-    test.expect(5)
-    var result = basex.defaults('basexpath', 'other/basex')
-    test.ok(_.isPlainObject(result))
-    test.equal(result.basexpath, 'other/basex')
-    test.equal(basex.defaults('basexpath'), 'other/basex')
-    basex.defaults('basexpath', 'tmp/basex')
-    test.notEqual(basex.defaults('basexpath'), result.basexpath)
-    test.equal(result.basexpath, 'other/basex')
-    test.done()
-  },
-  'sets defaults on new instances': function(test){
-    test.expect(1)
-
-    var b = new basex({
-      classpath: 'basex.jar'
-    })
-
-    test.equal(b.defaults('classpath'), 'basex.jar')
-
-    test.done()
-
-  },
-
-  'defaults get overriden': function(test){
-    test.expect(5)
-
-    basex.defaults('xquery', '"A"')
-    var a = new basex()
-    var b = new basex({
-      xquery: '"B"'
-    })
-
-    a.op()
-      .then(function(result){
-        test.equal(result, 'A')
-        return b.op()
-      })
-      .then(function(result){
-        
-        test.equal(result, 'B')
-        b.defaults('xquery', '"C"')
-        return b.op()
-      })
-      .then(function(result){
-        test.equal(result, "C")
-        return b.op({xquery: '"D"'})
-      })
-      .then(function(result){
-        test.equal(result, "D")
-        basex.reset()
-        basex.defaults({
-          classpath : 'lib/basex.jar',
-          basexpath : 'tmp/basex'
-        })
-
-        return basex()
-      })
-      .then(function(result){
-        test.equal(result, "")
-        test.done()
-      })
-      .done()
-  },
-
   'args': function(test){
     test.expect(1)
     var args = basex._args()
@@ -216,113 +138,73 @@ exports['basex'] = {
   'op - simple query': function(test) {
     test.expect(1);
     // tests here
-    var b = new basex()
-    b.op('1 to 10')
-      .then(function(actual){
-        test.equal(actual, '1 2 3 4 5 6 7 8 9 10', 'Should run simple queries.')
-        test.done()
-      })
-      .done()
+    
+    b({xquery: '1 to 10'}, function(e, actual){
+      if(e) throw e
+      test.equal(actual, '1 2 3 4 5 6 7 8 9 10', 'Should run simple queries.')
+      test.done()
+    })
+      
   },
   'op - escapes xquery': function(test){
       test.expect(1);
-      var b = new basex()
-      b.op({ xquery: 'for $n in 1 to 10 return $n || ""'})
-        .then(function(data){
-            test.equal(data, '1 2 3 4 5 6 7 8 9 10', "Escapes $ and '\"' sign properly.")
-            test.done()
-        })
-        .done()
-  },
-
-  'op - returns promise': function(test){
-      test.expect(3);
-      var b = new basex()
-      var op = b.op()
-      
-      test.equal(op.constructor.name, 'Promise')
-      test.ok('then' in  op)
-      test.ok('fail' in  op)
-      test.done()
+      b({ xquery: 'for $n in 1 to 10 return $n || ""'}, function(e, data){
+        if(e) throw e
+        test.equal(data, '1 2 3 4 5 6 7 8 9 10', "Escapes $ and '\"' sign properly.")
+        test.done()
+      })
   },
 
   'op - uses input doc': function(test){
       test.expect(1);
-      var b = basex.partial({ 
-            input: 'test/fixtures/book.html'
-          })
-
-      b('//abbr/@title/string()')
-        .then(function(data){
-            test.equal(data, 'ok')
-            test.done()
+      b({ 
+        input: 'test/fixtures/book.html', 
+        xquery: '//abbr/@title/string()'
+      }, function(e, data){
+          if(e) throw e
+          test.equal(data, 'ok')
+          test.done()
         })
-        .done()
+  },
+
+  'op - run xquery from file': function(test){
+    test.expect(1);
+    b('test/fixtures/query.xql', function(e, data){
+      if(e) throw e
+      test.equal(data, 'ok', 'Should run XQuery files.')
+      test.done()
+    })
   },
 
   'op - runs command scripts': function(test){
       test.expect(1);
-      var b = new basex({newline: true})
-      b.op('test/fixtures/info.bxs')
-        .then(function(data){
-            test.ok(data.match(/General Information/g).length === 3)
-            test.done()
-        })
-        .done()
+      var b2 = basex.partial({newline: true, basexpath: 'tmp/basex'})
+      b2('test/fixtures/info.bxs', function(e, data){
+        if(e) throw e
+        test.ok(data.match(/General Information/g).length === 3)
+        test.done()
+      })
   },
 
   'callable - module': function(test) {
     test.expect(1);
     
-    basex('1 to 10')
-      .then(function(data){
+    basex({ 
+        basexpath: 'tmp/basex',
+        xquery: '1 to 10'
+      }, function(e, data){
         test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Module should be callable directly.')
         test.done()
       })
-      .done()
-  },
-
-  'callable - instance': function(test) {
-    test.expect(1);
-    var b = new basex()
-    b.op('1 to 10')
-      .then(function(data){
-        test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Instances should be callable directly.')
-        test.done()
-      })
-      .done()
-  },
-
-  'op - run xquery from file': function(test){
-    test.expect(1);
-    var b = new basex()
-    b.op('test/fixtures/query.xql')
-      .then(function(data){
-        test.equal(data, 'ok', 'Should run XQuery files.')
-        test.done()
-      })
-      .done()
-    
-  },
-
-  'spawn - returns child process': function(test){
-    test.expect(1);
-    var b = new basex()
-    var c = b.spawn()
-
-    test.equal(c.constructor.name, 'ChildProcess')
-    test.done()
   },
 
   'no args': function(test) {
     test.expect(1);
     // tests here
-    basex()
-      .then(function(data){
-        test.equal(data, '', 'should run empty without output.')
-        test.done()
-      })
-      .done()
+    basex(function(e, data){
+      test.equal(data, '', 'should run empty without output.')
+      test.done()
+    })
   },
 
   'classpath - multiple': function(test){
@@ -330,14 +212,13 @@ exports['basex'] = {
 
     test.doesNotThrow(function(){
       basex({
+        basexpath: 'tmp/basex',
         classpath: ['lib/basex.jar', 'lib/tagsoup.jar'],
         xquery: '1 to 10'
-      })
-      .then(function(data){
+      }, function(e, data){
         test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Should accept multiple jars as classpath.')
         test.done()
       })
-      .done()
     })
 
   }
