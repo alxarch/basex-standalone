@@ -12,7 +12,10 @@ Install the module with: `npm install basex-standalone`
 var basex = require('basex-standalone');
 
 // prints '1 2 3 4 5 6 7 8 9 10'
-basex({xquery: '1 to 10'}).then(console.log)
+basex({xquery: '1 to 10'}, function(error, data){
+	if(e) throw e
+	else console.log(data) 
+})
 ```
 
 Or create a partial to set individual defaults
@@ -30,7 +33,10 @@ var b = basex.partial({
 b({
 	serializer: { method: 'text' },
 	xquery: 'db:system()/mainoptions/dbpath/text()'
-}).then(console.log)
+}, function(error, data){
+	if(e) throw e
+	else console.log(data) 
+})
 ```
 
 ## Documentation
@@ -50,25 +56,24 @@ This module acts as a simple wrapper around `BaseX`'s
 *Standalone Mode* passing arguments via cli and reading back
 stdout/stderr output.
 
-Asynchronous execution is handled with the *promise* interface, 
-as provided by the `q` module [see more](http://documentup.com/kriskowal/q/)
-
-
 > Tip: For better performance, prefer [Command Scripts](http://docs.basex.org/wiki/Commands#Command_Scripts)
 > over sequential invocations (ie multiple `ADD`, `SET` commands)
 
 ## Usage
 
-You can either use the `Promise` based interface:
+Use buffered output by passing a callback
 
 ```js
 
 var basex = require('basex')
 
-basex({xquery: '1 to 10'}).then(console.log)
+basex({xquery: '1 to 10', function(error, data){
+	if(e) throw e
+	else console.log(data) 
+})
 ```
 
-Or directly access the `ChildProcess`:
+or directly access the `ChildProcess`:
 
 ```js
 
@@ -76,14 +81,14 @@ var basex = require('basex')
 
 var custom = basex.partial({classpath: 'path/to/basex.jar'})
 
-var cp = custom.spawn({xquery: '1 to 10'})
+var cp = custom({xquery: '1 to 10'})
 
 cp.stdout.pipe(process.stdout)
 ```
 
 ### Partials
 
-Partials are a convenience to avoid setting all options on each operation.
+Partials are a convenience to facilitate with default options handling.
 
 ```js
 
@@ -93,19 +98,7 @@ var partial = basex.partial({debug: true, newlines: true})
 
 partial('1 to 10')
 partial('test.xql')
-```
 
-Calling the module as a constructor is equivalent to creating a partial.
-
-```js
-
-var partial = basex.partial({debug.true})
-```
-is equal to 
-
-```js
-
-var partial = new basex({debug: true})
 ```
 
 #### `basex.partial(defaults)`
@@ -115,63 +108,11 @@ Returns: `Function`
 Returns a partially applied function that will always use the provided options as defaults.
 
 
-#### `partial(options)`
-
-Returns: `Promise`
-
-Calling the partial will execute an operation.
-
-#### `partial.spawn(options)`
+#### `partial(options, callback)`
 
 Returns: `ChildProcess`
 
-Each partial has a `spawn` method that returns the `child_process` directly.
-This can be used as a mode low-level interface than promise objects.
-
-#### `partial.op(options)`
-
-Returns: `Promise`
-
-Equivalent of calling `partial(options)`. Returns a promise object.
-
-
-#### `partial.reset()`
-
-Resets the partial to its initial state.
-
-#### `partial.defaults()`
-
-Returns a deep copy of the default options for the partial.
-
-#### `partial.defaults(key)`
-
-Gets the value of key from the default options for the partial.
-
-#### `partial.defaults(key, value)`
-
-Sets the value of key on the default options for the partial.
-
-#### `partial.defaults(options)`
-
-Sets the value of all key, value pairs on the default options for the partial.
-
-Default options also can be set with the same method on module level using `basex.defaults()`:
-
-```js
-
-var basex = require('basex')
-
-basex.defaults({
-	classpath: 'path/to/basex.jar'
-})
-```
-
-> These settings affect *all* future operations.
-
-> Note that upon execution global options are re-merged with the partial's defaults and the operation's options.
-
-To restore the global defaults to their original values use `basex.reset()`
-
+Calling the partial will execute an operation.
 
 ### Options
 
@@ -495,10 +436,10 @@ Execute a BaseX Command Script to batch-process json and xml data
 ```
 
 ```js
-basex('some/command/script.bxs')
-	.then(function(output){
-		console.log(output)
-	})
+basex('some/command/script.bxs', function(error, data)
+        if(e) throw e
+        else console.log(data)
+    })
 ```
 
 Or do the same with a `basex.Job`:
@@ -517,27 +458,15 @@ job.command('info')
 	.xquery("for $book ...")
 	.dropdb('test')
 
-basex(job).then(function(output){
-		console.log(output)
-	})
+basex(job, function(error, data)
+        if(e) throw e
+        else console.log(data)
+    })
 ```
-
-
-Run several queries against an input document in a queue:
-
-```js
-
-var b = basex.partial({input: 'doc.xml'})
-
-b('//a[@id = "findme"]/string()')
-	.then(function(id){
-		return b.op('//div[@class="'+resolve(id)+'"]')
-	})
-	.then(console.log)
-```
-
 
 ## Release History
+1.2.0 - Simplify API and drop Q dependency
+1.1.0 - Include jar via downloading upon installation
 1.0.2 - fix order of required modules
 1.0.1 - fix multiple values for `options.classpath` 
 1.0.0 - First Official Release
