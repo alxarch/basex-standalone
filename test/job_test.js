@@ -97,6 +97,17 @@ exports['job'] = {
         test.equal(j.queue[0].__input__, undefined)
         test.done()
     },
+    'create-db options': function(test){
+        test.expect(5)
+        var j = new Job()
+        var jj = j.createdb('test', ['A', 'B'], {ftindex: true, stemming: 'greek'})
+        test.ok(jj instanceof Job)
+        test.equal(j.queue[0].__cmd__, 'xquery')
+        test.equal(j.queue[0].name, null)
+        test.equal(j.db, null)
+        test.equal(j.queue[0].__input__, '<![CDATA[db:create("test", ("A","B"), map { "ftindex" := true(), "stemming" := "greek" })]]>')
+        test.done()
+    },
     'open': function(test){
         test.expect(5)
         var j = new Job()
