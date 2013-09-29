@@ -22,7 +22,7 @@ var basex = require('../lib/basex.js');
     test.doesNotThrow(block, [error], [message])
     test.ifError(value)
 */
-var b = basex.partial({basexpath: 'tmp/basex'})
+var b = basex.partial({})
 
 exports['basex'] = {
   'args': function(test){
@@ -178,7 +178,7 @@ exports['basex'] = {
 
   'op - runs command scripts': function(test){
       test.expect(1);
-      var b2 = basex.partial({newline: true, basexpath: 'tmp/basex'})
+      var b2 = basex.partial({newline: true})
       b2('test/fixtures/info.bxs', function(e, data){
         if(e) throw e
         test.ok(data.match(/General Information/g).length === 3)
@@ -190,7 +190,6 @@ exports['basex'] = {
     test.expect(1);
     
     basex({ 
-        basexpath: 'tmp/basex',
         xquery: '1 to 10'
       }, function(e, data){
         test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Module should be callable directly.')
@@ -212,7 +211,6 @@ exports['basex'] = {
 
     test.doesNotThrow(function(){
       basex({
-        basexpath: 'tmp/basex',
         classpath: ['lib/basex.jar', 'lib/tagsoup.jar'],
         xquery: '1 to 10'
       }, function(e, data){
