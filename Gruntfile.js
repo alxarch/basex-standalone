@@ -80,7 +80,7 @@ module.exports = function(grunt) {
 
 	grunt.registerTask('install', function(){
 		var done = this.async();
-		
+		grunt.file.mkdir('tmp')
 		download('tmp/basex.jar', basexurl, function (e){
 			if (e) {
 				throw e;
