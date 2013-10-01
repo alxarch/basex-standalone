@@ -188,7 +188,12 @@ exports['basex'] = {
 
 	'op - runs command scripts': function (test) {
 		test.expect(1);
-		var b2 = basex.partial({newline: true});
+		var b2 = basex.partial({ 
+			classpath: 'tmp/basex.jar',
+			basexpath: 'tmp/basex',
+			xquery: '1 to 10',
+			newline: true
+		});
 		b2('test/fixtures/info.bxs', function (e, data) {
 			if(e) {
 				throw e;
@@ -202,18 +207,11 @@ exports['basex'] = {
 		test.expect(1);
 		
 		basex({ 
-				xquery: '1 to 10'
-			}, function (e, data) {
-				test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Module should be callable directly.');
-				test.done();
-			})
-	},
-
-	'no args': function (test) {
-		test.expect(1);
-		// tests here
-		basex(function (e, data) {
-			test.equal(data, '', 'should run empty without output.');
+			classpath: 'tmp/basex.jar',
+			basexpath: 'tmp/basex',
+			xquery: '1 to 10'
+		}, function (e, data) {
+			test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Module should be callable directly.');
 			test.done();
 		})
 	},
@@ -224,6 +222,7 @@ exports['basex'] = {
 		test.doesNotThrow(function () {
 			basex({
 				classpath: ['tmp/basex.jar', 'tmp/tagsoup.jar'],
+				basexpath: 'tmp/basex',
 				xquery: '1 to 10'
 			}, function (e, data) {
 				test.equal(data, '1 2 3 4 5 6 7 8 9 10', 'Should accept multiple jars as classpath.');
