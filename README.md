@@ -263,9 +263,10 @@ In order for the module to work java needs access to `org.basex.BaseX` class.
 
 Download the latest version from [here](http://files.basex.org/releases)
 
-Alternatively `org.basex.BaseX` class must be available to java system-wide.
+Alternatively `org.basex.BaseX` class must be available to java system-wide 
+(i.e. by setting the CLASSPATH environment variable).
 
-Other useful jar files are: 
+Other useful files to include to the classpath are: 
 
 - [tagsoup](http://ccil.org/~cowan/XML/tagsoup/) For HTML parsing
 - [saxon](http://www.saxonica.com/welcome/welcome.xml) For XSLT transforms and XSD validations
