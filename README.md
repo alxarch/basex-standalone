@@ -284,104 +284,6 @@ Path for BaseX [Home Directory](http://docs.basex.org/wiki/Configuration#Home_Di
 > remain relative to node's cwd
 
 
-## `basex.Job`
-
-A convenience object that generates `BaseX` [Command Scripts](http://docs.basex.org/wiki/Commands#Command_Scripts).
-
-All `Job` methods except `Job.render()` are chainable.
-
-
-### `job.command(name, input, params), job.command(name, params)`
-
-`name`: the tagname of the command (`drop-db`)
-
-Appends a command to the script.
-
-All command name, input, and params are validated 
-and relevant errors are thrown.
-
-### `job.requires(module1, module2, ..., moduleN)`
-
-Adds a `REPO INSTALL <file>` command for each argument.
-
-### `job.bind(key, value), job.bind(bindings)`
-
-Binds parameters for XQuery external variables.
-
-These bindings are collected and *prepended* to the command script 
-before all other commands upon rendering.
-
-### `job.execute(command)`
-
-Appends an `EXECUTE` command. 
-If `command` can be a `basex.Job` instance.
-
-### `job.xquery(xquery)`
-
-Appends an `XQUERY` command.
-
-### `job.import(files, path, options), job.import(files), job.import(files, options)`
-
-Imports files.
-
-In order to specify parsing options for the files without affecting
-global options, it appends an `EXECUTE` command that executes 
-a child Command Script. Options that can be set are:
-
-#### `options.db`
-
-Specify the database to add files to. 
-If not set the currently opened database will be used.
-If no db is currently open or the specified database does not exist
-the script will fail upon execution.
-
-#### `options.{createfilter, addarchives, skipcorrupt, addraw, parser, parseropt, htmlopt}`
-
-See [Parsing Options](http://docs.basex.org/wiki/Options#Parsing)
-
-#### `options.{chop, intparse}`
-See [Parsing Options](http://docs.basex.org/wiki/Options#XML_Parsing)
-
-
-### `job.set(option, value), job.set(options)`
-
-`option`: Option name to set.
-`value`: Value to set the option to.
-
-or 
-
-`options`: Object of option/value pairs.
-
-Appends single/multiple `SET` command.
-
-### `job.export(path)`
-
-Appends an `EXPORT <path>` command.
-
-### `job.check(db)`
-
-Appends an `CHECK <db>` command.
-
-### `job.open(db)`
-
-Appends an `OPEN <db>` command.
-
-### `job.close()`
-
-Appends a `CLOSE` command.
-
-### `job.run(file)`
-
-Appends a `RUN` command.
-
-### `job.render()`
-
-Renders the xml for this Command Script.
-
-### `job.toString()`
-
-Alias of `job.render()`
-
 
 ## Examples
 
@@ -443,29 +345,8 @@ basex('some/command/script.bxs', function(error, data)
     })
 ```
 
-Or do the same with a `basex.Job`:
-
-```js
-
-var job = new basex.Job()
-
-job.command('info')
-	.createdb('test')
-	.import('some/file.xml', 'test.xml')
-	.import('somedir/with/json/files', {
-		parser: 'json',
-		createfilter: '*.json'
-	})
-	.xquery("for $book ...")
-	.dropdb('test')
-
-basex(job, function(error, data)
-        if(e) throw e
-        else console.log(data)
-    })
-```
-
 ## Release History
+1.3.0 - basex.Job moved to it's own module
 1.2.0 - Simplify API and drop Q dependency
 1.1.0 - Include jar via downloading upon installation
 1.0.2 - fix order of required modules
