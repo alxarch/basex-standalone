@@ -346,7 +346,8 @@ basex('some/command/script.bxs', function(error, data)
 ```
 
 ## Release History
-1.3.0 - basex.Job moved to it's own module
+1.4.0 - basex.Job moved to it's own module
+1.3.0 - Lets the user handle the classpath
 1.2.0 - Simplify API and drop Q dependency
 1.1.0 - Include jar via downloading upon installation
 1.0.2 - fix order of required modules
